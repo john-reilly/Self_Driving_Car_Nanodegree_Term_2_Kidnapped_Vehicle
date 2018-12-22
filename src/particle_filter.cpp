@@ -25,7 +25,21 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
   
-  num_particles = 10; //starting low will try 10 , 100 , 1000
+  num_particles = 10 ; //starting low will try 10 , 100 , 1000
+  default_random_engine gen ;
+  // This is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
+  double std_x, std_y, std_theta ; // Standard deviations for x, y, and theta
+  std_x = std[0] ;
+  std_y = std[1] ;
+  std_theta = std[2] ;
+  
+  // Again below is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
+  // This line creates a normal (Gaussian) distribution for x
+  normal_distribution<double> dist_x(x, std_x);
+  normal_distribution<double> dist_y(y, std_y);
+  normal_distribution<double> dist_theta(theta, std_theta);
+  
+  
   
 
 }
