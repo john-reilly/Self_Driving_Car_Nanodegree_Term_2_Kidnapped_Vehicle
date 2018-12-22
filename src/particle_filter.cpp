@@ -39,6 +39,31 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   normal_distribution<double> dist_y(y, std_y);
   normal_distribution<double> dist_theta(theta, std_theta);
   
+  // Again below is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
+  for (int i = 0; i < num_particles; i++) { // I note Tifany used ++i here ti count to 3 from 0 for 3 counts I will use i++
+		double sample_x, sample_y, sample_theta;
+		
+		sample_x = dist_x(gen);
+		sample_y = dist_y(gen);
+		sample_theta = dist_theta(gen);
+    
+        //this follows the struct in partcile_filter.h
+        Particle single_particle; //make new instance of Particle  and set class variables
+        single_particle.id = i ; 
+        single_particle.x = sample_x ;
+        single_particle.y = sample_y ;
+        single_particle.theta = sample_theta ;
+        single_particle.weight = 1.0 ;
+   		 //also from header file in partcile_filter.h
+    	// add new particle weight to weightrs vector
+		weights.push_back(1.0) ;
+    	// add new particle to particles vector
+    	particles.push_back(single_particle) ; 
+    
+	}
+  
+  is_initialized = true ;//set boolean 
+  
   
   
 
