@@ -74,6 +74,38 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
+  
+  double std_x = std_pos[0] ;
+  double std_y = std_pos[1] ;
+  double std_theta = std_pos[2] ;
+  
+  default_random_engine gen ; //same as init
+  
+  for (int i = 0; i < num_particles; i++) {
+  
+    double predicted_x, predicted_y,predicted_theta ;
+    if( yaw_rate == 0){
+    	yaw_rate = 0.0001;  //this is to avoid a divide by zero and get the below equations to work
+    }
+    //equations from LEsson 14 section 9 : "Prediction step quiz explanation"
+    double theta = particles[i].theta ;
+    
+    predicted_x = (velocity/yaw_rate ) * ( sin(theta + ( delta_t * yaw_rate))- sin(theta) );
+    predicted_y = (velocity/yaw_rate ) * (cos(theta) - cos(theta + (delta_t * yaw_rate))  ) ;
+    predicted_theta = yaw_rate * delta_t ;
+    
+    //create Gausians around predictions
+    normal_distribution<double> dist_x(predicted_x, std_x);
+    normal_distribution<double> dist_y(predicted_y, std_y);
+    normal_distribution<double> dist_theta(predicted_theta, std_theta);
+    
+    // select and add a random gausian of the prediction and assign to particle in vector
+    particles[i].x = dist_x(gen) ;
+    particles[i].y =  dist_y(gen) ;
+    particles[i].theta = dist_theta(gen) ;  
+    
+  }
+  
 
 }
 
