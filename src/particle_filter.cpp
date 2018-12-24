@@ -135,7 +135,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   //loop through each particle...done
   //make a vector to store in range landmarks.....done
   //loop through landmarks and extract those within sensor range.....done
-  // translate observations to particle point of view
+  // translate observations to particle point of view...done
   //associate onservations with landmarks
   //multivariate gausian part
   //set assocaitions
@@ -150,54 +150,54 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     
     //find landmarks within senor range and add to vector landmarks_in_range
     for(int j = 0 ; j < map_landmarks.landmark_list.size() ; j++){
-      //extracting particle x and y and landmark x and y for distance evaluation
-      float x_f = map_landmarks.landmark_list[j].x_f ;
-      float y_f = map_landmarks.landmark_list[j].y_f ;
-      float id_i = map_landmarks.landmark_list[j].id_i ;
-      float px = particles[i].x ;
-      float py = particles[i].y ;
-      
-      // if landmark within sensor reange add to vector
-      if(sensor_range >= dist(px,py,x_f,y_f)){
-        LandmarkObs new_in_range_landmark ;
-        new_in_range_landmark.x = x_f ;
-        new_in_range_landmark.y = y_f ;
-        new_in_range_landmark.id = id_i ;//need to set this?
-        landmarks_in_range.push_back(new_in_range_landmark);
+          //extracting particle x and y and landmark x and y for distance evaluation
+          float x_f = map_landmarks.landmark_list[j].x_f ;
+          float y_f = map_landmarks.landmark_list[j].y_f ;
+          float id_i = map_landmarks.landmark_list[j].id_i ;
+          float px = particles[i].x ;
+          float py = particles[i].y ;
+
+          // if landmark within sensor reange add to vector
+          if(sensor_range >= dist(px,py,x_f,y_f)){
+            LandmarkObs new_in_range_landmark ;
+            new_in_range_landmark.x = x_f ;
+            new_in_range_landmark.y = y_f ;
+            new_in_range_landmark.id = id_i ;//need to set this?
+            landmarks_in_range.push_back(new_in_range_landmark);
+          }
+        
       }// loop should have produced a vector of landmarks within range of particle
       
-      //transform observations to particle point of view
+      //loop tp transform observations to particle point of view
       //transform equation from Lesson :14 Video : 16
       vector<LandmarkObs> transformed_observations ;
       for(int j = 0 ; j < observations.size() ; j++){
       	
-        //using same terms as LEsson 14 Video 16 to make it easier to read
-        double x_p = particles[i].x ;
-        double y_p = particles[i].y ;
-        double theta = particles[i].theta ;
-        double x_c = observations[j].x ;
-        double y_c = observations[j].y ;
+          //using same terms as LEsson 14 Video 16 to make it easier to read
+          double x_p = particles[i].x ;
+          double y_p = particles[i].y ;
+          double theta = particles[i].theta ;
+          double x_c = observations[j].x ;
+          double y_c = observations[j].y ;
+
+          LandmarkObs  transformed_observation ;
+          transformed_observation.id = observations[j].id ;
+          transformed_observation.x = x_p + (cos(theta) * x_c) - ( sin(theta) * y_c) ; //same as in lesson
+          transformed_observation.y = y_p + (sin(theta) * x_c) + ( cos(theta) * y_c) ;
+          //below OK just shorted to make more readable
+          //transformed_obsesrvation.x = particles[i].x + (cos(particles[i].theta) * observations[j].x)- (sin(particles[i].theta) * observations[j].y);//is i here correct index??...think so
+          //transformed_obsesrvation.y = particles[i].y + (sin(particles[i].theta) * observations[j].x)+ (cos(particles[i].theta) * observations[j].y);
+
+          transformed_observations.push_back(transformed_observation);        
         
-        LandmarkObs  transformed_observation ;
-        transformed_observation.id = observations[j].id ;
-        transformed_observation.x = x_p + (cos(theta) * x_c) - ( sin(theta) * y_c) ; //same as in lesson
-        transformed_observation.y = y_p + (sin(theta) * x_c) + ( cos(theta) * y_c) ;
-        //below OK just shorted to make more readable
-        //transformed_obsesrvation.x = particles[i].x + (cos(particles[i].theta) * observations[j].x)- (sin(particles[i].theta) * observations[j].y);//is i here correct index??...think so
-        //transformed_obsesrvation.y = particles[i].y + (sin(particles[i].theta) * observations[j].x)+ (cos(particles[i].theta) * observations[j].y);
-        
-        transformed_observations.push_back(transformed_observation);
-        
-        
-        
-      }
+     	}//end of transformation loop new vector filled
       
     }//end of particle loop
     
     
     
   
-  }
+  
   
   
 }
