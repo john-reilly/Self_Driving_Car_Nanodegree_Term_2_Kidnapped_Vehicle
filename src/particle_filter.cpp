@@ -138,6 +138,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   //associate onservations with landmarks
   //multivariate gausian part
   //set assocaitions
+  
+  
+  double std_landmark_x = std_landmark[0] ;
+  double std_landmark_y = std_landmark[1] ;
+  
+  
 }
 
 void ParticleFilter::resample() {
