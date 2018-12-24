@@ -131,9 +131,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   http://planning.cs.uiuc.edu/node99.html
   
   //plan:
-  //set up gausian variables
-  //loop through each particle
-  //make a vector to store in range landmarks
+  //set up gausian variables......done
+  //loop through each particle...done
+  //make a vector to store in range landmarks//
   //loop through landmarks and extract those within sensor range
   //associate onservations with landmarks
   //multivariate gausian part
@@ -142,6 +142,34 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   
   double std_landmark_x = std_landmark[0] ;
   double std_landmark_y = std_landmark[1] ;
+  // this loop goes through each particle one at a time
+  for(int i = 0 ; i < num_particles ; i++){ 
+    //this vector will store the subset of landmarks within range of the particle
+    vector<LandmarkObs> landmarks_in_range ; 
+    
+    for(int j = 0 ; j < map_landmarks.landmark_list.size() ; j++){
+      //extracting particle x and y and landmark x and y for distance evaluation
+      float x_f = map_landmarks.landmark_list[j].x_f ;
+      float x_y = map_landmarks.landmark_list[j].y_f ;
+      float id_i = map_landmarks.landmark_list[j].id_i ;
+      float px = particles[i].x ;
+      float py = particles[i].y ;
+      // if landmark within sensor reange add to vector
+      if(sensor_range >= dist(px,py,x_f,x_y)){
+        LandmarkObs new_in_range_landmark ;
+        new_in_range_landmark.x = x_f ;
+        new_in_range_landmark.y = x_y ;
+        new_in_range_landmark.id = id_i ;//need to set this?
+        landmarks_in_range.push_back(new_in_range_landmark);
+      }//end of landmarks in range loop should have produced a vector of landmarks within range of particle
+      
+      
+    }//end of partcile loop
+    
+    
+    
+  
+  }
   
   
 }
