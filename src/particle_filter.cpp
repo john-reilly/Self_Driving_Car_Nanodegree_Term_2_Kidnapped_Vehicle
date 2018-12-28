@@ -117,12 +117,12 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> landmarks_in_range
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
   
-  for(int i ; i < transformed_observations.size() ; i++)
+  for(int i =0; i < transformed_observations.size() ; i++)
   {
     double nearest_neighbour_distance = 999999 ; //deliberatley initalising with very big distance that will be overwritten
     int nearest_neighbour_id ;//do I need to intialise ?? don't think so
       
-  	for(int j ; j < landmarks_in_range.size() ; j++)
+  	for(int j =0; j < landmarks_in_range.size() ; j++)
     {
       double test_distance = dist(transformed_observations[i].x, transformed_observations[i].y , landmarks_in_range[j].x, landmarks_in_range[j].y);
       
@@ -161,8 +161,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   //make a vector to store in range landmarks.....done
   //loop through landmarks and extract those within sensor range.....done
   // translate observations to particle point of view...done
-  //associate onservations with landmarks
-  //multivariate gausian part
+  //associate onservations with landmarks....done
+  //multivariate gausian part..done
   //set assocaitions
   
   
@@ -172,6 +172,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   for(int i = 0 ; i < num_particles ; i++){ 
     //this vector will store the subset of landmarks within range of the particle
     vector<LandmarkObs> landmarks_in_range ; 
+    vector<int> associations;
+    vector<double> sense_x ;
+    vector<double> sense_y ;
     
     //find landmarks within senor range and add to vector landmarks_in_range
     for(int j = 0 ; j < map_landmarks.landmark_list.size() ; j++){
@@ -218,7 +221,57 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
      	}//end of transformation loop new vector filled
     
    //dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations)
-    	dataAssociation( landmarks_in_range , transformed_observations);
+    	dataAssociation( landmarks_in_range , transformed_observations); // send to above method
+    	
+    	//mulitvariate gausian from Lesson 14 Video :19 and 20 converted from Python to C++
+        //  # calculate normalization term
+        //gauss_norm= (1/(2 * np.pi * sig_x * sig_y))
+        //# calculate exponent
+        //exponent= ((x_obs - mu_x)**2)/(2 * sig_x**2) + ((y_obs - mu_y)**2)/(2 * sig_y**2)
+        //# calculate weight using normalization terms and exponent
+        //weight= gauss_norm * math.exp(-exponent)
+   		double gauss_norm = (1/(2 * M_PI * std_landmark_x * std_landmark_y )) ; //std_landmark_x from start of method
+    	double exponent = 0;
+    	double x_obs = 0 ;
+        double mu_x = 0 ;
+    	double y_obs = 0 ;
+    	double mu_y = 0 ;
+    	double weight = 1;
+    
+    	for(int k = 0 ;k < transformed_observations.size();k++)
+        {
+          	for(int l = 0; l < landmarks_in_range.size() ; l++)
+            {
+              	if( landmarks_in_range[l].id == transformed_observations[k].id )
+                {
+                  //variable names from Lesson 14 Video :19 and 20
+                  x_obs = landmarks_in_range[l].x ;
+                  mu_x  = transformed_observations[k].x ;
+                  y_obs = landmarks_in_range[l].y ;
+                  mu_y  = transformed_observations[k].y ;
+                  
+                  break;//got id match break to save time
+                  
+                }
+            }
+            //variable names from Lesson 14 Video :19 and 20
+          	//exponent = ((x_obs - mu_x)**2)/(2 * sig_x**2) + ((y_obs - mu_y)**2)/(2 * sig_y**2)
+          	exponent = (pow((x_obs - mu_x),2))/(2 * std_landmark_x * std_landmark_x) + (pow((y_obs - mu_y),2))/(2 * std_landmark_y * std_landmark_y) ;
+          	//weight= gauss_norm * math.exp(-exponent)
+          	double temp_weight;
+          	temp_weight*= gauss_norm * exp(-exponent) ;
+          	if(temp_weight > 0 )
+            {
+              weight *= temp_weight ; // to avoid a mulitply by zero
+            }
+          	sense_x.push_back(transformed_observations[k].x );
+            sense_y.push_back(transformed_observations[k].y );
+            associations.push_back(transformed_observations[k].id );
+        }
+    	particles[i].weight = weight ;
+    	weights.push_back(weight); 
+    	particles[i] = SetAssociations(particles[i], associations, sense_x, sense_y) ; 
+    
       
     }//end of particle loop
     
