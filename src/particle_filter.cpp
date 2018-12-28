@@ -109,11 +109,36 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 
 }
 
-void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
+//void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
+void ParticleFilter::dataAssociation(std::vector<LandmarkObs> landmarks_in_range, std::vector<LandmarkObs>& transformed_observations) {
+  //landmarks_in_range , transformed_observations)
 	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the 
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
+  
+  for(int i ; i < transformed_observations.size() ; i++)
+  {
+    double nearest_neighbour_distance = 999999 ; //deliberatley initalising with very big distance that will be overwritten
+    int nearest_neighbour_id ;//do I need to intialise ?? don't think so
+      
+  	for(int j ; j < landmarks_in_range.size() ; j++)
+    {
+      double test_distance = dist(transformed_observations[i].x, transformed_observations[i].y , landmarks_in_range[j].x, landmarks_in_range[j].y);
+      
+      if(test_distance < nearest_neighbour_distance)
+      {
+        nearest_neighbour_distance = test_distance ;
+        nearest_neighbour_id = landmarks_in_range[j].id;
+        
+      }
+      
+    }
+    
+    transformed_observations[i].id = nearest_neighbour_id;
+    
+    
+  }
 
 }
 
@@ -182,15 +207,18 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
           LandmarkObs  transformed_observation ;
           transformed_observation.id = observations[j].id ;
-          transformed_observation.x = x_p + (cos(theta) * x_c) - ( sin(theta) * y_c) ; //same as in lesson
+          transformed_observation.x = x_p + (cos(theta) * x_c) - ( sin(theta) * y_c) ; //same variable names as in lesson for clarity
           transformed_observation.y = y_p + (sin(theta) * x_c) + ( cos(theta) * y_c) ;
-          //below OK just shorted to make more readable
+          //below OK just shortened to make more readable
           //transformed_obsesrvation.x = particles[i].x + (cos(particles[i].theta) * observations[j].x)- (sin(particles[i].theta) * observations[j].y);//is i here correct index??...think so
           //transformed_obsesrvation.y = particles[i].y + (sin(particles[i].theta) * observations[j].x)+ (cos(particles[i].theta) * observations[j].y);
 
           transformed_observations.push_back(transformed_observation);        
         
      	}//end of transformation loop new vector filled
+    
+   //dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations)
+    	dataAssociation( landmarks_in_range , transformed_observations);
       
     }//end of particle loop
     
