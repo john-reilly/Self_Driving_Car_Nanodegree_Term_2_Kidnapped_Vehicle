@@ -275,6 +275,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     	weights[i] = weight ;	
     	cout << "line 275 weights size" << weights.size() << "particle size" << particles.size() << endl ;
     	particles[i] = SetAssociations(particles[i], associations, sense_x, sense_y) ; 
+    	cout << "line 278" << endl ;
     
       
     }//end of particle loop
@@ -316,21 +317,25 @@ void ParticleFilter::resample() {
 cout << "in resample line 308" << endl;
 }
 
-Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations, 
-                                     const std::vector<double>& sense_x, const std::vector<double>& sense_y)
+//Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations, const std::vector<double>& sense_x, const std::vector<double>& sense_y)
+Particle ParticleFilter::SetAssociations(Particle particle,  std::vector<int> associations, std::vector<double> sense_x, std::vector<double> sense_y)//this matches the video & and const removed....seems to cause a segmentation fault
 {
     //particle: the particle to assign each listed association, and association's (x,y) world coordinates mapping to
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
-  
+  cout << "line 327" << endl ;
     particle.associations.clear();// I saw this clearing section in the Q+A video
     particle.sense_x.clear();
     particle.sense_y.clear();
-
+ cout << "line 331" << endl ;
     particle.associations = associations;
+  cout << "line 333" << endl ;
     particle.sense_x = sense_x;
     particle.sense_y = sense_y;
+   cout << "line 336" << endl ;
+  
+  return particle ;
 }
 
 string ParticleFilter::getAssociations(Particle best)
