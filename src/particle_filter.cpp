@@ -271,7 +271,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
             associations.push_back(transformed_observations[k].id );
         }
     	particles[i].weight = weight ;
-    	weights.push_back(weight); 
+    	//weights.push_back(weight); //was doubling the weight here needed clear at start or use i as ref no pushback
+    	weights[i] = weight ;	
+    	cout << "line 275 weights size" << weights.size() << "particle size" << particles.size() << endl ;
     	particles[i] = SetAssociations(particles[i], associations, sense_x, sense_y) ; 
     
       
