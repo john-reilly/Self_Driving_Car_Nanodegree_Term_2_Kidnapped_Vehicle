@@ -287,7 +287,20 @@ void ParticleFilter::resample() {
   //this is based on lesson 13 video 20 and suggested C++ link above
   
   
-  discrete_distribution(weights.begin(), weights.end()) //from https://en.cppreference.com/w/cpp/numeric/random/discrete_distribution/discrete_distribution
+  //discrete_distribution(weights.begin(), weights.end()) //from https://en.cppreference.com/w/cpp/numeric/random/discrete_distribution/discrete_distribution
+  //below is straight from the Q+A video using above C++ library similar to above library code example
+  
+  default_random_engine gen;
+  discrete_distribution<int> distribution(weights.begin(), weights.end() );
+  
+  vector<Particle> resample_particles ;
+  
+  for(int i = 0 ; i < num_particles ; i++)
+  {
+    resample_particles.push_back(particles[distribution(gen)]);
+  }
+  
+  particles = resample_particles ;
   
 
 }
@@ -300,11 +313,11 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<i
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
   
-    particle.associations.clear();// I saw this clearing section in the video
+    particle.associations.clear();// I saw this clearing section in the Q+A video
     particle.sense_x.clear();
     particle.sense_y.clear();
 
-    particle.associations= associations;
+    particle.associations = associations;
     particle.sense_x = sense_x;
     particle.sense_y = sense_y;
 }
