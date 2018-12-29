@@ -163,7 +163,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   // translate observations to particle point of view...done
   //associate onservations with landmarks....done
   //multivariate gausian part..done
-  //set assocaitions
+  //set assocaitions...done
   
   
   double std_landmark_x = std_landmark[0] ;
@@ -275,10 +275,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       
     }//end of particle loop
     
-    
-    
-  
-  
   
   
 }
@@ -287,6 +283,12 @@ void ParticleFilter::resample() {
 	// TODO: Resample particles with replacement with probability proportional to their weight. 
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
+  
+  //this is based on lesson 13 video 20 and suggested C++ link above
+  
+  
+  discrete_distribution(weights.begin(), weights.end()) //from https://en.cppreference.com/w/cpp/numeric/random/discrete_distribution/discrete_distribution
+  
 
 }
 
@@ -297,6 +299,10 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<i
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
+  
+    particle.associations.clear();// I saw this clearing section in the video
+    particle.sense_x.clear();
+    particle.sense_y.clear();
 
     particle.associations= associations;
     particle.sense_x = sense_x;
