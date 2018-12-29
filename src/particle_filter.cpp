@@ -24,7 +24,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
-  
+  cout << "in Init line 27" ;
   num_particles = 10 ; //starting low will try 10 , 100 , 1000
   default_random_engine gen ;
   // This is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
@@ -32,17 +32,17 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   std_x = std[0] ;
   std_y = std[1] ;
   std_theta = std[2] ;
-  
+  cout << "in Init line 35" ;
   // Again below is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
   // This line creates a normal (Gaussian) distribution for x
   normal_distribution<double> dist_x(x, std_x);
   normal_distribution<double> dist_y(y, std_y);
   normal_distribution<double> dist_theta(theta, std_theta);
-  
+  cout << "in Init line 41" ;
   // Again below is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
   for (int i = 0; i < num_particles; i++) { // I note Tifany used ++i here ti count to 3 from 0 for 3 counts I will use i++
 		double sample_x, sample_y, sample_theta;
-		
+		cout << "in Init line 43 in for loop" ;
 		sample_x = dist_x(gen);
 		sample_y = dist_y(gen);
 		sample_theta = dist_theta(gen);
@@ -61,8 +61,9 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     	particles.push_back(single_particle) ; 
     
 	}
-  
+  cout << "in Init line 64" ;
   is_initialized = true ;//set boolean 
+  cout << "in Init line 65" ;
   
   
   
@@ -74,7 +75,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
-  
+  cout << "in Prediction line 77" << endl;
   double std_x = std_pos[0] ;
   double std_y = std_pos[1] ;
   double std_theta = std_pos[2] ;
@@ -82,27 +83,28 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   default_random_engine gen ; //same as init
   
   for (int i = 0; i < num_particles; i++) {
-  
+  	cout << "in Prediction main loop line 85" << endl;
     double predicted_x, predicted_y,predicted_theta ;
     if( yaw_rate == 0){
     	yaw_rate = 0.0001;  //this is to avoid a divide by zero and get the below equations to work
     }
     //equations from LEsson 14 section 9 : "Prediction step quiz explanation"
     double theta = particles[i].theta ;
-    
+    cout << "in Prediction main loop line 92" << endl;
     predicted_x = (velocity/yaw_rate ) * ( sin(theta + ( delta_t * yaw_rate))- sin(theta) );
     predicted_y = (velocity/yaw_rate ) * (cos(theta) - cos(theta + (delta_t * yaw_rate))  ) ;
     predicted_theta = yaw_rate * delta_t ;
-    
+    cout << "in Prediction main loop line 96" << endl;
     //create Gausians around predictions
     normal_distribution<double> dist_x(predicted_x, std_x);
     normal_distribution<double> dist_y(predicted_y, std_y);
     normal_distribution<double> dist_theta(predicted_theta, std_theta);
-    
+    cout << "in Prediction main loop line 101" << endl;
     // select and add a random gausian of the prediction and assign to particle in vector
     particles[i].x = dist_x(gen) ;
     particles[i].y =  dist_y(gen) ;
     particles[i].theta = dist_theta(gen) ;  
+    cout << "in Prediction main loop line 106" << endl;
     
   }
   
@@ -289,20 +291,27 @@ void ParticleFilter::resample() {
   
   //discrete_distribution(weights.begin(), weights.end()) //from https://en.cppreference.com/w/cpp/numeric/random/discrete_distribution/discrete_distribution
   //below is straight from the Q+A video using above C++ library similar to above library code example
-  
+  cout << "in resample line 294" << endl;
   default_random_engine gen;
   discrete_distribution<int> distribution(weights.begin(), weights.end() );
-  
+  cout << "in resample line 297" << endl;
   vector<Particle> resample_particles ;
-  
+  cout << "in resample line 299 num_partciles:" << num_particles << endl;
+  cout << "in resample line 300 particles.size:" << particles.size() << endl;
+  cout << "in resample line 301 weights.size:" << weights.size() << endl;
+    
   for(int i = 0 ; i < num_particles ; i++)
   {
-    resample_particles.push_back(particles[distribution(gen)]);
+    cout << "in resample line 302" << endl;
+    double test_gen = distribution(gen);
+    cout << "test_gen" << test_gen << endl;// I am wondering is distribution(gen) producing an invalid index?? or maybe not enough partciles to choose from??
+    //resample_particles.push_back(particles[distribution(gen)]);
+    resample_particles.push_back(particles[test_gen]);
   }
-  
+  cout << "in resample line 305" << endl;
   particles = resample_particles ;
   
-
+cout << "in resample line 308" << endl;
 }
 
 Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations, 
