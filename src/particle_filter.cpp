@@ -24,28 +24,31 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
-  cout << "in Init line 27" ;
-  num_particles = 10 ; //starting low will try 10 , 100 , 1000
+  //cout << "in Init line 27" ;
+  num_particles = 100 ; //starting low will try 10 , 100 , 1000 //1000 very slow
   default_random_engine gen ;
   // This is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
   double std_x, std_y, std_theta ; // Standard deviations for x, y, and theta
   std_x = std[0] ;
   std_y = std[1] ;
   std_theta = std[2] ;
-  cout << "in Init line 35" ;
+  //cout << "in Init line 35" ;
   // Again below is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
   // This line creates a normal (Gaussian) distribution for x
   normal_distribution<double> dist_x(x, std_x);
   normal_distribution<double> dist_y(y, std_y);
   normal_distribution<double> dist_theta(theta, std_theta);
-  cout << "in Init line 41" ;
+  //cout << "in Init line 41" ;
   // Again below is based on Lesson 14 Video 6 Gausian Sampling Quiz solution
   for (int i = 0; i < num_particles; i++) { // I note Tifany used ++i here ti count to 3 from 0 for 3 counts I will use i++
 		double sample_x, sample_y, sample_theta;
-		cout << "in Init line 43 in for loop" ;
+		//cout << "in Init line 43 in for loop" ;
 		sample_x = dist_x(gen);
 		sample_y = dist_y(gen);
 		sample_theta = dist_theta(gen);
+    //cout << "sample_x" << sample_x << endl ;
+    //cout << "sample_y" << sample_y << endl ;
+    
     
         //this follows the struct in partcile_filter.h
         Particle single_particle; //make new instance of Particle  and set class variables
@@ -61,9 +64,9 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     	particles.push_back(single_particle) ; 
     
 	}
-  cout << "in Init line 64" ;
+  //cout << "in Init line 64" ;
   is_initialized = true ;//set boolean 
-  cout << "in Init line 65" ;
+  //cout << "in Init line 65" ;
   
   
   
@@ -75,7 +78,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
-  cout << "in Prediction line 77" << endl;
+  //cout << "in Prediction line 77" << endl;
   double std_x = std_pos[0] ;
   double std_y = std_pos[1] ;
   double std_theta = std_pos[2] ;
@@ -83,28 +86,36 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   default_random_engine gen ; //same as init
   
   for (int i = 0; i < num_particles; i++) {
-  	cout << "in Prediction main loop line 85" << endl;
+  	//cout << "in Prediction main loop line 85" << endl;
     double predicted_x, predicted_y,predicted_theta ;
     if( yaw_rate == 0){
-    	yaw_rate = 0.0001;  //this is to avoid a divide by zero and get the below equations to work
+      //cout << "yaw rate == 0" << endl;
+    	yaw_rate = 0.00001;  //this is to avoid a divide by zero and get the below equations to work
     }
     //equations from LEsson 14 section 9 : "Prediction step quiz explanation"
     double theta = particles[i].theta ;
-    cout << "in Prediction main loop line 92" << endl;
-    predicted_x = (velocity/yaw_rate ) * ( sin(theta + ( delta_t * yaw_rate))- sin(theta) );
-    predicted_y = (velocity/yaw_rate ) * (cos(theta) - cos(theta + (delta_t * yaw_rate))  ) ;
-    predicted_theta = yaw_rate * delta_t ;
-    cout << "in Prediction main loop line 96" << endl;
+    //cout << "in Prediction main loop line 92" << endl;
+    // i noticed everyone else had som e variation of += here.... 
+    
+    predicted_x = particles[i].x + (   (velocity/yaw_rate ) * (sin(theta + ( delta_t * yaw_rate))- sin(theta) )   );
+    predicted_y = particles[i].y + (   (velocity/yaw_rate ) * (cos(theta) - cos(theta + (delta_t * yaw_rate))  )   );
+    predicted_theta = particles[i].theta + (yaw_rate * delta_t );
+    //cout << "in Prediction main loop line 96" << endl;
     //create Gausians around predictions
+   
     normal_distribution<double> dist_x(predicted_x, std_x);
     normal_distribution<double> dist_y(predicted_y, std_y);
     normal_distribution<double> dist_theta(predicted_theta, std_theta);
-    cout << "in Prediction main loop line 101" << endl;
+    //cout << "in Prediction main loop line 101" << endl;
     // select and add a random gausian of the prediction and assign to particle in vector
-    particles[i].x = dist_x(gen) ;
+    //particles[i].x = dist_x(gen) ;
+    //particles[i].y =  dist_y(gen) ;
+    //particles[i].theta = dist_theta(gen) ;  //adding +=
+    
+    particles[i].x =  dist_x(gen) ;
     particles[i].y =  dist_y(gen) ;
-    particles[i].theta = dist_theta(gen) ;  
-    cout << "in Prediction main loop line 106" << endl;
+    particles[i].theta =  dist_theta(gen) ;  
+    //cout << "in Prediction main loop line 106" << endl;
     
   }
   
@@ -247,11 +258,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
               	if( landmarks_in_range[l].id == transformed_observations[k].id )
                 {
                   //variable names from Lesson 14 Video :19 and 20
-                  x_obs = landmarks_in_range[l].x ;
-                  mu_x  = transformed_observations[k].x ;
-                  y_obs = landmarks_in_range[l].y ;
-                  mu_y  = transformed_observations[k].y ;
-                  
+                  //might have these backwards
+                  x_obs = landmarks_in_range[l].x ; // mu_x = landmarks_in_range[l].x ;//x_obs = landmarks_in_range[l].x ;
+                  mu_x  = transformed_observations[k].x ;//x_obs  = transformed_observations[k].x ;//mu_x  = transformed_observations[k].x ;
+                  y_obs = landmarks_in_range[l].y ;//mu_y = landmarks_in_range[l].y ;//y_obs = landmarks_in_range[l].y ;
+                  mu_y  = transformed_observations[k].y ; //y_obs  = transformed_observations[k].y ;//mu_y  = transformed_observations[k].y ;
+                  //cout<<"just before break line 257 " << endl ;
                   break;//got id match break to save time
                   
                 }
@@ -259,23 +271,28 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
             //variable names from Lesson 14 Video :19 and 20
           	//exponent = ((x_obs - mu_x)**2)/(2 * sig_x**2) + ((y_obs - mu_y)**2)/(2 * sig_y**2)
           	exponent = (pow((x_obs - mu_x),2))/(2 * std_landmark_x * std_landmark_x) + (pow((y_obs - mu_y),2))/(2 * std_landmark_y * std_landmark_y) ;
-          	//weight= gauss_norm * math.exp(-exponent)
+          	//weight *= gauss_norm * exp(-exponent) ;
+            //cout << "exponent " << exponent << endl ;
           	double temp_weight;
-          	temp_weight*= gauss_norm * exp(-exponent) ;
-          	if(temp_weight > 0 )
+          	temp_weight = gauss_norm * exp(-exponent) ;
+         
+          	if(temp_weight > 0.0 )
             {
+              //cout << "temp_weight " << temp_weight << "weight " << weight << endl ;
               weight *= temp_weight ; // to avoid a mulitply by zero
+              //cout << "updated weight: " <<weight << endl ;
             }
           	sense_x.push_back(transformed_observations[k].x );
             sense_y.push_back(transformed_observations[k].y );
             associations.push_back(transformed_observations[k].id );
         }
+   		 //cout << "set particles[i].weight to weight" << weight << endl ;
     	particles[i].weight = weight ;
     	//weights.push_back(weight); //was doubling the weight here needed clear at start or use i as ref no pushback
     	weights[i] = weight ;	
-    	cout << "line 275 weights size" << weights.size() << "particle size" << particles.size() << endl ;
+    	//cout << "line 275 weights size" << weights.size() << "particle size" << particles.size() << endl ;
     	particles[i] = SetAssociations(particles[i], associations, sense_x, sense_y) ; 
-    	cout << "line 278" << endl ;
+    	//cout << "line 278" << endl ;
     
       
     }//end of particle loop
@@ -294,27 +311,28 @@ void ParticleFilter::resample() {
   
   //discrete_distribution(weights.begin(), weights.end()) //from https://en.cppreference.com/w/cpp/numeric/random/discrete_distribution/discrete_distribution
   //below is straight from the Q+A video using above C++ library similar to above library code example
-  cout << "in resample line 294" << endl;
+ // cout << "in resample line 294" << endl;
   default_random_engine gen;
-  discrete_distribution<int> distribution(weights.begin(), weights.end() );
-  cout << "in resample line 297" << endl;
+  discrete_distribution<int> distribution(weights.begin(), (weights.end()-1) );
+  //discrete_distribution<int> distribution(weights.begin(), weights.end() ); /changed on advice from Knowledge////not sure no apparent difference
+  //cout << "in resample line 297" << endl;
   vector<Particle> resample_particles ;
-  cout << "in resample line 299 num_partciles:" << num_particles << endl;
-  cout << "in resample line 300 particles.size:" << particles.size() << endl;
-  cout << "in resample line 301 weights.size:" << weights.size() << endl;
+  //cout << "in resample line 299 num_partciles:" << num_particles << endl;
+ // cout << "in resample line 300 particles.size:" << particles.size() << endl;
+ // cout << "in resample line 301 weights.size:" << weights.size() << endl;
     
   for(int i = 0 ; i < num_particles ; i++)
   {
-    cout << "in resample line 302" << endl;
-    double test_gen = distribution(gen);
-    cout << "test_gen" << test_gen << endl;// I am wondering is distribution(gen) producing an invalid index?? or maybe not enough partciles to choose from??
-    //resample_particles.push_back(particles[distribution(gen)]);
-    resample_particles.push_back(particles[test_gen]);
+    //cout << "in resample line 302" << endl;
+    //double test_gen = distribution(gen);
+   // cout << "test_gen" << test_gen << endl;// I am wondering is distribution(gen) producing an invalid index?? or maybe not enough partciles to choose from??
+    resample_particles.push_back(particles[distribution(gen)]);
+    //resample_particles.push_back(particles[test_gen]);
   }
-  cout << "in resample line 305" << endl;
+//  cout << "in resample line 305" << endl;
   particles = resample_particles ;
   
-cout << "in resample line 308" << endl;
+//cout << "in resample line 308" << endl;
 }
 
 //Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations, const std::vector<double>& sense_x, const std::vector<double>& sense_y)
@@ -324,16 +342,16 @@ Particle ParticleFilter::SetAssociations(Particle particle,  std::vector<int> as
     // associations: The landmark id that goes along with each listed association
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
-  cout << "line 327" << endl ;
+ // cout << "line 327" << endl ;
     particle.associations.clear();// I saw this clearing section in the Q+A video
     particle.sense_x.clear();
     particle.sense_y.clear();
- cout << "line 331" << endl ;
+// cout << "line 331" << endl ;
     particle.associations = associations;
-  cout << "line 333" << endl ;
+//  cout << "line 333" << endl ;
     particle.sense_x = sense_x;
     particle.sense_y = sense_y;
-   cout << "line 336" << endl ;
+  // cout << "line 336" << endl ;
   
   return particle ;
 }
